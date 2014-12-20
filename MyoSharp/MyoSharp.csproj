@@ -47,6 +47,7 @@
     <Compile Include="Device\AccelerometerDataEventArgs.cs" />
     <Compile Include="Device\Arm.cs" />
     <Compile Include="Device\ArmRecognizedEventArgs.cs" />
+    <Compile Include="Device\EmgDataEventArgs.cs" />
     <Compile Include="Device\Hub.cs" />
     <Compile Include="Device\GyroscopeDataEventArgs.cs" />
     <Compile Include="Device\IHub.cs" />
@@ -57,6 +58,8 @@
     <Compile Include="Device\OrientationDataEventArgs.cs" />
     <Compile Include="Device\OrientationIndex.cs" />
     <Compile Include="Device\PoseEventArgs.cs" />
+    <Compile Include="Device\StreamEmgType.cs" />
+    <Compile Include="Device\UnlockType.cs" />
     <Compile Include="Device\VersionComponent.cs" />
     <Compile Include="Device\VibrationType.cs" />
     <Compile Include="Device\XDirection.cs" />

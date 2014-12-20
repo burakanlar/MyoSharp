@@ -64,6 +64,7 @@ namespace MyoSharp.ConsoleSample
             Console.WriteLine(@"Roll: {0}", roll);
             Console.WriteLine(@"Pitch: {0}", pitch);
             Console.WriteLine(@"Yaw: {0}", yaw);
+            Console.WriteLine((e.Myo.IsUnlocked ? "unlocked" : "locked"));
         }
         #endregion
     }

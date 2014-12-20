@@ -32,14 +32,14 @@ namespace MyoSharp.Poses
         FingersSpread = 4,
 
         /// <summary>
-        /// Reserved value; not a valid pose.
+        /// 
         /// </summary>
-        Reserved1 = 5,
+        DoubleTap = 5,
 
         /// <summary>
-        /// When the user is touching the tip of their thumb to the tip of their pinky.
+        /// Reserved value; not a valid pose.
         /// </summary>
-        ThumbToPinky = 6,
+        Reserved1 = 6,
 
         /// <summary>
         /// Unknown pose.

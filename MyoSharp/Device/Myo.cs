@@ -60,6 +60,12 @@ namespace MyoSharp.Device
             private set;
         }
 
+        public bool IsUnlocked
+        {
+            get;
+            private set;
+        }
+
         public Arm Arm
         {
             get;
@@ -90,6 +96,12 @@ namespace MyoSharp.Device
             private set;
         }
 
+        public Int32[] EMG
+        {
+            get;
+            private set;
+        }
+ 
         public XDirection XDirectionOnArm
         {
             get;
@@ -116,6 +128,12 @@ namespace MyoSharp.Device
         public event EventHandler<GyroscopeDataEventArgs> GyroscopeDataAcquired;
 
         public event EventHandler<RssiEventArgs> Rssi;
+
+        public event EventHandler<MyoEventArgs> Unlocked;
+
+        public event EventHandler<MyoEventArgs> Locked;
+
+        public event EventHandler<EmgDataEventArgs> EmgDataAcquired;
         #endregion
 
         #region Methods
@@ -147,6 +165,53 @@ namespace MyoSharp.Device
             else
             {
                 vibrate_64(_handle, type, IntPtr.Zero);
+            }
+        }
+
+        /// <summary>
+        /// Causes the Myo to lock.
+        /// </summary>
+        public void Lock()
+        {
+            if (PlatformInvocation.Running32Bit)
+            {
+                lock_32(_handle, IntPtr.Zero);
+            }
+            else
+            {
+                lock_64(_handle, IntPtr.Zero);
+            }
+        }
+
+        /// <summary>
+        /// Causes the Myo to unlock.
+        /// </summary>
+        /// <param name="type">The type of unlock.</param>
+        public void Unlock(UnlockType type)
+        {
+            if (PlatformInvocation.Running32Bit)
+            {
+                unlock_32(_handle, type, IntPtr.Zero);
+            }
+            else
+            {
+                unlock_64(_handle, type, IntPtr.Zero);
+            }
+        }
+
+        /// <summary>
+        /// Set whether or not to stream EMG data for a given myo.
+        /// </summary>
+        /// <param name="type">The type of unlock.</param>
+        public void StreamEmg(StreamEmgType type)
+        {
+            if (PlatformInvocation.Running32Bit)
+            {
+                stream_emg_32(_handle, type, IntPtr.Zero);
+            }
+            else
+            {
+                stream_emg_64(_handle, type, IntPtr.Zero);
             }
         }
 
@@ -211,6 +276,18 @@ namespace MyoSharp.Device
 
                 case MyoEventType.Rssi:
                     OnRssi(evt, timestamp);
+                    break;
+
+                case MyoEventType.Locked:
+                    OnLock(timestamp);
+                    break;
+
+                case MyoEventType.Unlocked:
+                    OnUnLock(timestamp);
+                    break;
+
+                case MyoEventType.EMG:
+                    OnEMGData(evt, timestamp);
                     break;
             }
         }
@@ -407,6 +484,62 @@ namespace MyoSharp.Device
         }
 
         /// <summary>
+        /// Called when the Myo has locked.
+        /// </summary>
+        /// <param name="timestamp">The timestamp of the event.</param>
+        protected virtual void OnLock(DateTime timestamp)
+        {
+            this.IsUnlocked = false;
+            var handler = Locked;
+            if (handler != null)
+            {
+                var args = new MyoEventArgs(this, timestamp);
+                handler(this, args);
+            }
+        }
+
+        /// <summary>
+        /// Called when the Myo has unlocked.
+        /// </summary>
+        /// <param name="timestamp">The timestamp of the event.</param>
+        protected virtual void OnUnLock(DateTime timestamp)
+        {
+            this.IsUnlocked = true;
+            var handler = Unlocked;
+            if (handler != null)
+            {
+                var args = new MyoEventArgs(this, timestamp);
+                handler(this, args);
+            }
+        }
+
+        /// <summary>
+        /// Called when EMG data has been acquired from the Myo.
+        /// </summary>
+        /// <param name="evt">The pointer to the event.</param>
+        /// <param name="timestamp">The timestamp of the event.</param>
+        protected virtual void OnEMGData(IntPtr evt, DateTime timestamp)
+        {
+            var emg = new int[8];
+            this.EMG = emg;
+
+            for (int i = 0; i < 8; i++)
+            {
+                emg[i] = GetEMGData(evt, i);
+            }
+
+            var handler = EMG;
+            if (handler != null)
+            {
+                var args = new EmgDataEventArgs(
+                    this,
+                    timestamp,
+                    emg);
+                EmgDataAcquired(this, args);
+            }
+        }
+
+        /// <summary>
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
@@ -512,6 +645,13 @@ namespace MyoSharp.Device
                 : event_get_gyroscope_64(evt, index);
         }
 
+        protected static int GetEMGData(IntPtr evt, int sensor)
+        {
+            return PlatformInvocation.Running32Bit
+                ? event_get_emg_32(evt, sensor)
+                : event_get_emg_64(evt, sensor);
+        }
+
         protected static Pose GetEventPose(IntPtr evt)
         {
             return PlatformInvocation.Running32Bit
@@ -536,6 +676,24 @@ namespace MyoSharp.Device
         #endregion
 
         #region PInvokes
+        [DllImport(PlatformInvocation.MyoDllPath32, EntryPoint = "libmyo_set_stream_emg", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void stream_emg_32(IntPtr myo, StreamEmgType type, IntPtr error);
+
+        [DllImport(PlatformInvocation.MyoDllPath64, EntryPoint = "libmyo_set_stream_emg", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void stream_emg_64(IntPtr myo, StreamEmgType type, IntPtr error);
+
+        [DllImport(PlatformInvocation.MyoDllPath32, EntryPoint = "libmyo_myo_unlock", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void unlock_32(IntPtr myo, UnlockType type, IntPtr error);
+
+        [DllImport(PlatformInvocation.MyoDllPath64, EntryPoint = "libmyo_myo_unlock", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void unlock_64(IntPtr myo, UnlockType type, IntPtr error);
+
+        [DllImport(PlatformInvocation.MyoDllPath32, EntryPoint = "libmyo_myo_lock", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void lock_32(IntPtr myo, IntPtr error);
+
+        [DllImport(PlatformInvocation.MyoDllPath64, EntryPoint = "libmyo_myo_lock", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void lock_64(IntPtr myo, IntPtr error);
+
         [DllImport(PlatformInvocation.MyoDllPath32, EntryPoint = "libmyo_vibrate", CallingConvention = CallingConvention.Cdecl)]
         private static extern void vibrate_32(IntPtr myo, VibrationType type, IntPtr error);
 
@@ -595,6 +753,12 @@ namespace MyoSharp.Device
 
         [DllImport(PlatformInvocation.MyoDllPath64, EntryPoint = "libmyo_event_get_rssi", CallingConvention = CallingConvention.Cdecl)]
         private static extern sbyte event_get_rssi_64(IntPtr evt);
+
+        [DllImport(PlatformInvocation.MyoDllPath32, EntryPoint = "libmyo_event_get_emg", CallingConvention = CallingConvention.Cdecl)]
+        private static extern sbyte event_get_emg_32(IntPtr evt, int sensor);
+
+        [DllImport(PlatformInvocation.MyoDllPath64, EntryPoint = "libmyo_event_get_emg", CallingConvention = CallingConvention.Cdecl)]
+        private static extern sbyte event_get_emg_64(IntPtr evt, int sensor);
         #endregion  
 
         #region Event handlers
@@ -605,7 +769,6 @@ namespace MyoSharp.Device
             {
                 return;
             }
-
             HandleEvent(e.EventType, e.Timestamp, e.Event);
         }
         #endregion

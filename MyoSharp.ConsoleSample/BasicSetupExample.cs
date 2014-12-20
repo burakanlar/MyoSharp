@@ -60,7 +60,10 @@ namespace MyoSharp.ConsoleSample
         #region Event Handlers
         private static void Myo_PoseChanged(object sender, PoseEventArgs e)
         {
-            Console.WriteLine("{0} arm Myo detected {1} pose!", e.Myo.Arm, e.Myo.Pose);
+            Console.WriteLine("{0} arm Myo detected {1} pose is {2}.", 
+                e.Myo.Arm, 
+                e.Myo.Pose, 
+                (e.Myo.IsUnlocked ? "unlocked" : "locked"));
         }
         #endregion
     }

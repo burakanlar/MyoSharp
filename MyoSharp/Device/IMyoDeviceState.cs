@@ -12,6 +12,8 @@ namespace MyoSharp.Device
         #region Properties
         bool IsConnected { get; }
 
+        bool IsUnlocked { get; }
+
         Arm Arm { get; }
 
         Pose Pose { get; }
@@ -21,6 +23,8 @@ namespace MyoSharp.Device
         Vector3F Accelerometer { get; }
 
         Vector3F Gyroscope { get; }
+
+        Int32[] EMG { get; }
         #endregion
     }
 }
