@@ -23,7 +23,7 @@ Updated for SDK 0.8.0 (Dec 19, 2014)
 * [`Pose Sequences`](#poseseq)
 * [`Holding Poses`](#posehold)
 * [`Roll, Pitch and Yaw Data`](#rpy)
-* * [`EMG Data`](#emg)
+* [`EMG Data`](#emg)
 * [`License`](#license)
 
 
