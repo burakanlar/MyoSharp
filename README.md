@@ -267,6 +267,8 @@ namespace MyoSharp.ConsoleSample
 }
 ```
 <a name='emg' />
+### EMG Data
+``` C#
 using System;
 
 using MyoSharp.Device;
@@ -331,6 +333,7 @@ namespace MyoSharp.ConsoleSample
         #endregion
     }
 }
+```
 <a name='license' />
 ### License
 MyoSharp uses the MIT License.
